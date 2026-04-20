@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OuraX - India's Prediction Market</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F7F7F8;color:#1a1a1a;min-height:100vh}
+  .nav{background:#fff;border-bottom:1px solid #eee;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+  .logo{font-size:22px;font-weight:700;color:#1a1a1a}.logo span{color:#7F77DD}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .wallet-pill{background:#F0EFFE;border:1px solid #C9C4F5;border-radius:20px;padding:6px 16px;font-size:13px;font-weight:600;color:#534AB7}
+  .btn{padding:8px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s}
+  .btn-primary{background:#534AB7;color:#fff}.btn-primary:hover{background:#3C3489}
+  .btn-outline{background:#fff;border:1px solid #ddd;color:#1a1a1a}.btn-outline:hover{border-color:#534AB7;color:#534AB7}
+  .btn-danger{background:#E24B4A;color:#fff}.btn-danger:hover{background:#A32D2D}
+  .tabs{background:#fff;border-bottom:1px solid #eee;padding:0 24px;display:flex;gap:4px}
+  .tab{padding:14px 20px;font-size:14px;font-weight:500;cursor:pointer;border:none;background:none;color:#666;border-bottom:2px solid transparent;transition:all 0.15s}
+  .tab.active{color:#534AB7;border-bottom-color:#534AB7}
+  .content{max-width:960px;margin:0 auto;padding:24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:18px;cursor:pointer;transition:all 0.15s}
+  .card:hover{border-color:#534AB7;box-shadow:0 4px 12px rgba(83,74,183,0.1)}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:10px}
+  .tag-cricket{background:#E1F5EE;color:#0F6E56}
+  .tag-crypto{background:#EEEDFE;color:#534AB7}
+  .tag-sports{background:#FAEEDA;color:#854F0B}
+  .tag-politics{background:#FAECE7;color:#993C1D}
+  .card-title{font-size:14px;font-weight:600;margin-bottom:14px;line-height:1.5;color:#1a1a1a}
+  .odds-row{display:flex;gap:8px;margin-bottom:12px}
+  .odd{flex:1;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
+  .odd-yes{background:#E1F5EE;color:#0F6E56;border:1px solid #9FE1CB}.odd-yes:hover{background:#9FE1CB}
+  .odd-no{background:#FAECE7;color:#993C1D;border:1px solid #F5C4B3}.odd-no:hover{background:#F5C4B3}
+  .card-footer{display:flex;justify-content:space-between;font-size:12px;color:#999}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .stat{background:#fff;border:1px solid #eee;border-radius:10px;padding:16px}
+  .stat-label{font-size:12px;color:#999;margin-bottom:6px}
+  .stat-value{font-size:22px;font-weight:700}
+  .section-title{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:28px;width:360px;max-width:90vw}
+  .modal h3{font-size:17px;font-weight:700;margin-bottom:4px}
+  .modal-sub{font-size:13px;color:#666;margin-bottom:20px}
+  .side-row{display:flex;gap:8px;margin-bottom:18px}
+  .side-btn{flex:1;padding:12px;border-radius:10px;border:2px solid transparent;cursor:pointer;text-align:center;transition:all 0.15s;background:#f5f5f5}
+  .side-btn.yes-btn{border-color:#0F6E56;background:#E1F5EE}
+  .side-btn.no-btn{border-color:#993C1D;background:#FAECE7}
+  .side-btn.inactive{opacity:0.4}
+  .side-label{font-size:11px;font-weight:600;margin-bottom:2px}
+  .side-pct{font-size:20px;font-weight:700}
+  .yes-btn .side-label,.yes-btn .side-pct{color:#0F6E56}
+  .no-btn .side-label,.no-btn .side-pct{color:#993C1D}
+  .form-label{font-size:13px;font-weight:500;color:#666;margin-bottom:6px}
+  .form-input{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:16px;transition:border-color 0.15s}
+  .form-input:focus{outline:none;border-color:#534AB7}
+  .payout-box{background:#F7F7F8;border-radius:10px;padding:14px;margin-bottom:18px;font-size:13px}
+  .payout-row{display:flex;justify-content:space-between;padding:3px 0}
+  .payout-row.total{font-weight:700;font-size:14px;padding-top:10px;margin-top:6px;border-top:1px solid #eee}
+  .btn-row{display:flex;gap:10px}
+  .leaderboard{background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden}
+  .lb-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid #f0f0f0;font-size:14px}
+  .lb-item:last-child{border-bottom:none}
+  .lb-rank{width:28px;font-weight:700;color:#999}
+  .lb-rank.top3{color:#534AB7}
+  .avatar{width:36px;height:36px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#534AB7;flex-shrink:0}
+  .avatar.me{background:#E1F5EE;color:#0F6E56}
+  .lb-name{flex:1;font-weight:500}
+  .lb-coins{font-weight:700;color:#534AB7}
+  .lb-profit{font-size:12px;color:#0F6E56;margin-left:8px}
+  .pos-table{background:#fff;border:1px solid #eee;border-radius:12px;overflow:hidden}
+  .pos-table table{width:100%;border-collapse:collapse;font-size:13px}
+  .pos-table th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;color:#999;border-bottom:1px solid #f0f0f0;letter-spacing:0.04em}
+  .pos-table td{padding:14px 16px;border-bottom:1px solid #f5f5f5}
+  .pos-table tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+  .badge-yes{background:#E1F5EE;color:#0F6E56}
+  .badge-no{background:#FAECE7;color:#993C1D}
+  .badge-open{background:#EEEDFE;color:#534AB7}
+  .badge-won{background:#E1F5EE;color:#0F6E56}
+  .badge-lost{background:#FAECE7;color:#993C1D}
+  .wallet-section{background:#fff;border:1px solid #eee;border-radius:12px;padding:22px;margin-bottom:16px}
+  .wallet-section h3{font-size:16px;font-weight:700;margin-bottom:4px}
+  .wallet-section p{font-size:13px;color:#666;margin-bottom:18px}
+  .quick-btns{display:flex;gap:8px;margin-bottom:12px}
+  .quick-btn{flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
+  .quick-btn:hover{border-color:#534AB7;color:#534AB7}
+  .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F0EFFE 0%,#fff 100%)}
+  .auth-box{background:#fff;border:1px solid #eee;border-radius:16px;padding:36px;width:400px;max-width:90vw}
+  .auth-logo{text-align:center;font-size:28px;font-weight:700;margin-bottom:6px}.auth-logo span{color:#7F77DD}
+  .auth-tagline{text-align:center;font-size:14px;color:#666;margin-bottom:28px}
+  .auth-tabs{display:flex;border:1px solid #eee;border-radius:8px;margin-bottom:24px;overflow:hidden}
+  .auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;background:#fff;border:none;transition:all 0.15s}
+  .auth-tab.active{background:#534AB7;color:#fff}
+  .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .empty{text-align:center;padding:48px;color:#999;font-size:14px}
+  .hidden{display:none}
+  @media(max-width:600px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+    .nav{padding:0 16px}
+    .content{padding:16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Oura<span>X</span></div>
+    <div class="auth-tagline">India's #1 prediction market</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuth('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuth('register')">Sign Up</button>
+    </div>
+    <div id="auth-login">
+      <input class="form-input" id="login-email" type="email" placeholder="Email address">
+      <input class="form-input" id="login-password" type="password" placeholder="Password">
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="login()">Login to OuraX</button>
+    </div>
+    <div id="auth-register" class="hidden">
+      <input class="form-input" id="reg-name" type="text" placeholder="Full name">
+      <input class="form-input" id="reg-email" type="email" placeholder="Email address">
+      <input class="form-input" id="reg-phone" type="tel" placeholder="Phone number">
+      <input class="form-input" id="reg-password" type="password" placeholder="Create password">
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="register()">Create Account (Get 100 OX free!)</button>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#999;margin-top:16px">By signing up you agree to our Terms of Service</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="hidden">
+  <nav class="nav">
+    <div class="logo">Oura<span>X</span></div>
+    <div class="nav-right">
+      <div class="wallet-pill" id="nav-balance">1,000 OX</div>
+      <button class="btn btn-primary" onclick="showTab('wallet')">+ Buy Coins</button>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('markets')">Markets</button>
+    <button class="tab" onclick="showTab('positions')">My Positions</button>
+    <button class="tab" onclick="showTab('leaderboard')">Leaderboard</button>
+    <button class="tab" onclick="showTab('wallet')">Wallet</button>
+  </div>
+
+  <div class="content">
+
+    <!-- MARKETS -->
+    <div id="tab-markets">
+      <div class="stats" id="stats-row">
+        <div class="stat"><div class="stat-label">Balance</div><div class="stat-value" id="s-balance">0 OX</div></div>
+        <div class="stat"><div class="stat-label">My Positions</div><div class="stat-value" id="s-positions">0</div></div>
+        <div class="stat"><div class="stat-label">Total Profit</div><div class="stat-value" id="s-profit" style="color:#1D9E75">+0 OX</div></div>
+        <div class="stat"><div class="stat-label">Active Markets</div><div class="stat-value" id="s-markets">0</div></div>
+      </div>
+      <div class="section-title">All Markets</div>
+      <div class="grid" id="markets-grid">
+        <div class="empty">Loading markets...</div>
+      </div>
+    </div>
+
+    <!-- POSITIONS -->
+    <div id="tab-positions" class="hidden">
+      <div class="section-title" style="margin-bottom:16px">My Active Positions</div>
+      <div class="pos-table">
+        <table>
+          <thead><tr><th>Market</th><th>Side</th><th>Placed</th><th>To win</th><th>Status</th></tr></thead>
+          <tbody id="positions-body"><tr><td colspan="5" class="empty">No positions yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="tab-leaderboard" class="hidden">
+      <div class="section-title" style="margin-bottom:16px">Top Traders This Week</div>
+      <div class="leaderboard" id="lb-list">
+        <div class="empty">Loading leaderboard...</div>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div id="tab-wallet" class="hidden">
+      <div class="stats" style="margin-bottom:24px">
+        <div class="stat"><div class="stat-label">OX Coins</div><div class="stat-value" id="w-coins">0 OX</div></div>
+        <div class="stat"><div class="stat-label">INR Value</div><div class="stat-value" id="w-inr">₹0</div></div>
+        <div class="stat"><div class="stat-label">Total Deposited</div><div class="stat-value" id="w-deposited">₹0</div></div>
+        <div class="stat"><div class="stat-label">Total Won</div><div class="stat-value" id="w-won" style="color:#1D9E75">0 OX</div></div>
+      </div>
+      <div class="wallet-section">
+        <h3>Buy OX Coins</h3>
+        <p>1 OX Coin = ₹1. Buy coins to start trading. Minimum ₹100.</p>
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="buyCoins(100)">₹100</button>
+          <button class="quick-btn" onclick="buyCoins(500)">₹500</button>
+          <button class="quick-btn" onclick="buyCoins(1000)">₹1,000</button>
+          <button class="quick-btn" onclick="buyCoins(5000)">₹5,000</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" style="margin:0;flex:1" id="custom-buy" type="number" placeholder="Custom amount in ₹">
+          <button class="btn btn-primary" onclick="buyCoins(parseInt(document.getElementById('custom-buy').value)||0)">Buy</button>
+        </div>
+      </div>
+      <div class="wallet-section">
+        <h3>Withdraw</h3>
+        <p>Convert OX Coins to INR. Minimum 500 OX. 30% TDS applies on profits above ₹10,000.</p>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" style="margin:0;flex:1" id="withdraw-amt" type="number" placeholder="OX Coins to withdraw">
+          <button class="btn btn-primary" onclick="toast('Withdrawal coming soon! Add your bank details in settings.')">Withdraw</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TRADE MODAL -->
+<div class="modal-overlay" id="trade-modal">
+  <div class="modal">
+    <h3 id="m-title">Market</h3>
+    <div class="modal-sub" id="m-tag">Category</div>
+    <div class="side-row">
+      <div class="side-btn yes-btn" id="side-yes" onclick="pickSide('yes')">
+        <div class="side-label">YES</div>
+        <div class="side-pct" id="m-yes-pct">50%</div>
+      </div>
+      <div class="side-btn no-btn inactive" id="side-no" onclick="pickSide('no')">
+        <div class="side-label">NO</div>
+        <div class="side-pct" id="m-no-pct">50%</div>
+      </div>
+    </div>
+    <div class="form-label">Amount (OX Coins)</div>
+    <input class="form-input" id="trade-amt" type="number" value="50" min="10" oninput="calcPayout()">
+    <div class="payout-box">
+      <div class="payout-row"><span style="color:#666">You bet</span><span id="p-bet">50 OX</span></div>
+      <div class="payout-row"><span style="color:#666">If correct</span><span id="p-win" style="color:#0F6E56">+50 OX</span></div>
+      <div class="payout-row"><span style="color:#666">If wrong</span><span id="p-lose" style="color:#993C1D">-50 OX</span></div>
+      <div class="payout-row total"><span>Potential payout</span><span id="p-total" style="color:#0F6E56">100 OX</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmTrade()">Confirm Trade</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-msg"></div>
+
+<script>
+// CONFIG - change this to your backend URL when deployed
+const API = 'http://localhost:5000/api';
+
+var currentUser = JSON.parse(localStorage.getItem('ourax_user') || 'null');
+var currentToken = localStorage.getItem('ourax_token') || '';
+var allMarkets = [];
+var myPositions = [];
+var selectedMarket = null;
+var selectedSide = 'yes';
+
+// ── INIT
+window.onload = function(){
+  if(currentUser && currentToken){
+    showApp();
+  }
+};
+
+// ── AUTH
+function switchAuth(tab){
+  document.getElementById('auth-login').classList.toggle('hidden', tab!=='login');
+  document.getElementById('auth-register').classList.toggle('hidden', tab!=='register');
+  document.querySelectorAll('.auth-tab').forEach(function(t,i){
+    t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register'));
+  });
+}
+
+async function login(){
+  var email    = document.getElementById('login-email').value;
+  var password = document.getElementById('login-password').value;
+  if(!email||!password){ toast('Please fill all fields'); return; }
+  try{
+    var res  = await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    saveSession(data);
+    showApp();
+  } catch(e){ toast(e.message||'Login failed'); }
+}
+
+async function register(){
+  var name     = document.getElementById('reg-name').value;
+  var email    = document.getElementById('reg-email').value;
+  var phone    = document.getElementById('reg-phone').value;
+  var password = document.getElementById('reg-password').value;
+  if(!name||!email||!password){ toast('Please fill all fields'); return; }
+  try{
+    var res  = await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,password})});
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    saveSession(data);
+    showApp();
+  } catch(e){ toast(e.message||'Registration failed'); }
+}
+
+function saveSession(data){
+  currentUser  = data.user;
+  currentToken = data.token;
+  localStorage.setItem('ourax_user',  JSON.stringify(data.user));
+  localStorage.setItem('ourax_token', data.token);
+}
+
+function logout(){
+  localStorage.removeItem('ourax_user');
+  localStorage.removeItem('ourax_token');
+  currentUser = null; currentToken = '';
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
+function showApp(){
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  loadMarkets();
+  loadPositions();
+  loadLeaderboard();
+  updateNavBalance();
+}
+
+// ── TABS
+function showTab(name){
+  ['markets','positions','leaderboard','wallet'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('hidden', t!==name);
+  });
+  document.querySelectorAll('.tab').forEach(function(t,i){
+    var tabs=['markets','positions','leaderboard','wallet'];
+    t.classList.toggle('active', tabs[i]===name);
+  });
+  if(name==='wallet') loadWallet();
+}
+
+// ── MARKETS
+async function loadMarkets(){
+  try{
+    var res     = await fetch(API+'/markets');
+    allMarkets  = await res.json();
+    renderMarkets();
+    document.getElementById('s-markets').textContent = allMarkets.length;
+  } catch(e){
+    document.getElementById('markets-grid').innerHTML = '<div class="empty">Could not load markets. Make sure backend is running.</div>';
+  }
+}
+
+function renderMarkets(){
+  var grid = document.getElementById('markets-grid');
+  if(!allMarkets.length){ grid.innerHTML = '<div class="empty">No markets available</div>'; return; }
+  grid.innerHTML = allMarkets.map(function(m){
+    return '<div class="card" onclick="openTrade(\''+m._id+'\')">'
+      +'<div class="tag tag-'+m.category.toLowerCase()+'">'+m.category+'</div>'
+      +'<div class="card-title">'+m.title+'</div>'
+      +'<div class="odds-row">'
+      +'<div class="odd odd-yes" onclick="event.stopPropagation();openTradeWithSide(\''+m._id+'\',\'yes\')">Yes '+m.yesOdds+'%</div>'
+      +'<div class="odd odd-no" onclick="event.stopPropagation();openTradeWithSide(\''+m._id+'\',\'no\')">No '+m.noOdds+'%</div>'
+      +'</div>'
+      +'<div class="card-footer"><span>Vol: '+m.totalVolume.toLocaleString()+' OX</span><span>'+daysLeft(m.endsAt)+'</span></div>'
+      +'</div>';
+  }).join('');
+}
+
+function daysLeft(date){
+  var d = Math.ceil((new Date(date)-Date.now())/(1000*60*60*24));
+  return d > 0 ? 'Ends in '+d+' day'+(d>1?'s':'') : 'Ending soon';
+}
+
+// ── TRADE MODAL
+function openTrade(id){ openTradeWithSide(id,'yes'); }
+function openTradeWithSide(id, side){
+  selectedMarket = allMarkets.find(function(m){ return m._id===id; });
+  if(!selectedMarket) return;
+  selectedSide = side;
+  document.getElementById('m-title').textContent    = selectedMarket.title;
+  document.getElementById('m-tag').textContent      = selectedMarket.category;
+  document.getElementById('m-yes-pct').textContent  = selectedMarket.yesOdds+'%';
+  document.getElementById('m-no-pct').textContent   = selectedMarket.noOdds+'%';
+  document.getElementById('trade-amt').value = 50;
+  pickSide(side);
+  document.getElementById('trade-modal').classList.add('show');
+}
+
+function closeModal(){ document.getElementById('trade-modal').classList.remove('show'); }
+
+function pickSide(side){
+  selectedSide = side;
+  document.getElementById('side-yes').classList.toggle('inactive', side!=='yes');
+  document.getElementById('side-no').classList.toggle('inactive', side!=='no');
+  calcPayout();
+}
+
+function calcPayout(){
+  var amt  = parseInt(document.getElementById('trade-amt').value)||0;
+  var odds = selectedSide==='yes' ? selectedMarket.yesOdds/100 : selectedMarket.noOdds/100;
+  var win  = Math.round(amt/odds - amt);
+  document.getElementById('p-bet').textContent   = amt+' OX';
+  document.getElementById('p-win').textContent   = '+'+win+' OX';
+  document.getElementById('p-lose').textContent  = '-'+amt+' OX';
+  document.getElementById('p-total').textContent = (amt+win)+' OX';
+}
+
+async function confirmTrade(){
+  var amt = parseInt(document.getElementById('trade-amt').value)||0;
+  if(amt<10){ toast('Minimum 10 OX per trade'); return; }
+  try{
+    var res  = await fetch(API+'/trades',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentToken},
+      body:JSON.stringify({marketId:selectedMarket._id, side:selectedSide, amount:amt})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    currentUser.oxBalance = data.newBalance;
+    localStorage.setItem('ourax_user', JSON.stringify(currentUser));
+    updateNavBalance();
+    closeModal();
+    loadPositions();
+    toast('Trade placed! '+amt+' OX on '+selectedSide.toUpperCase());
+    showTab('positions');
+  } catch(e){ toast(e.message||'Trade failed'); }
+}
+
+// ── POSITIONS
+async function loadPositions(){
+  try{
+    var res      = await fetch(API+'/positions',{headers:{'Authorization':'Bearer '+currentToken}});
+    myPositions  = await res.json();
+    renderPositions();
+    document.getElementById('s-positions').textContent = myPositions.filter(function(p){ return p.status==='open'; }).length;
+  } catch(e){ console.log('Positions error:', e); }
+}
+
+function renderPositions(){
+  var tbody = document.getElementById('positions-body');
+  if(!myPositions.length){
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No positions yet. Go trade!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = myPositions.map(function(p){
+    return '<tr>'
+      +'<td style="max-width:220px;font-size:13px">'+(p.marketId?p.marketId.title:'Unknown')+'</td>'
+      +'<td><span class="badge badge-'+p.side+'">'+p.side.toUpperCase()+'</span></td>'
+      +'<td>'+p.amount+' OX</td>'
+      +'<td style="color:#0F6E56">+'+p.potential+' OX</td>'
+      +'<td><span class="badge badge-'+p.status+'">'+p.status.charAt(0).toUpperCase()+p.status.slice(1)+'</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ── LEADERBOARD
+async function loadLeaderboard(){
+  try{
+    var res   = await fetch(API+'/leaderboard');
+    var users = await res.json();
+    var html  = users.map(function(u,i){
+      var isMe = currentUser && u._id===currentUser.id;
+      return '<div class="lb-item">'
+        +'<div class="lb-rank'+(i<3?' top3':'')+'">'+( i<3?['1','2','3'][i] : i+1 )+'</div>'
+        +'<div class="avatar'+(isMe?' me':'')+'">'+u.name.substring(0,2).toUpperCase()+'</div>'
+        +'<div class="lb-name">'+u.name+(isMe?' (You)':'')+'</div>'
+        +'<div class="lb-coins">'+u.oxBalance.toLocaleString()+' OX</div>'
+        +'<div class="lb-profit">+'+(u.totalProfit||0)+' OX</div>'
+        +'</div>';
+    }).join('');
+    document.getElementById('lb-list').innerHTML = html || '<div class="empty">No traders yet</div>';
+  } catch(e){ document.getElementById('lb-list').innerHTML = '<div class="empty">Could not load leaderboard</div>'; }
+}
+
+// ── WALLET
+async function loadWallet(){
+  try{
+    var res  = await fetch(API+'/wallet',{headers:{'Authorization':'Bearer '+currentToken}});
+    var data = await res.json();
+    document.getElementById('w-coins').textContent     = data.oxBalance.toLocaleString()+' OX';
+    document.getElementById('w-inr').textContent       = '₹'+data.oxBalance.toLocaleString();
+    document.getElementById('w-deposited').textContent = '₹'+data.totalDeposited.toLocaleString();
+    document.getElementById('w-won').textContent       = (data.totalProfit||0)+' OX';
+  } catch(e){ console.log('Wallet error:', e); }
+}
+
+async function buyCoins(amount){
+  if(amount<100){ toast('Minimum ₹100'); return; }
+  try{
+    var res  = await fetch(API+'/wallet/buy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentToken},
+      body:JSON.stringify({amount})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error);
+    currentUser.oxBalance = data.newBalance;
+    localStorage.setItem('ourax_user', JSON.stringify(currentUser));
+    updateNavBalance();
+    loadWallet();
+    toast('Added '+amount+' OX Coins!');
+  } catch(e){ toast(e.message||'Purchase failed'); }
+}
+
+// ── HELPERS
+function updateNavBalance(){
+  var bal = currentUser ? currentUser.oxBalance : 0;
+  document.getElementById('nav-balance').textContent  = bal.toLocaleString()+' OX';
+  document.getElementById('s-balance').textContent    = bal.toLocaleString()+' OX';
+}
+
+function toast(msg){
+  var t = document.getElementById('toast-msg');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
